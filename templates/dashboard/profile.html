@@ -17,36 +17,52 @@
         <form method="post" enctype="multipart/form-data" class="auth-form">
             {% csrf_token %}
             
-            <h3 class="profile-section-title">Основная информация</h3>
-            {% for field in user_form %}
-            <div class="form-group">
-                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                {{ field }}
-                {% if field.errors %}
-                <small class="form-error">{{ field.errors.0 }}</small>
-                {% endif %}
-            </div>
-            {% endfor %}
-
-            <div class="profile-section-spacer"></div>
-            <h3 class="profile-section-title">Дополнительно</h3>
-            
-            {% for field in profile_form %}
-            <div class="form-group">
-                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                {{ field }}
-                {% if field.errors %}
-                <small class="form-error">{{ field.errors.0 }}</small>
-                {% endif %}
+            <!-- Avatar Section -->
+            <div class="avatar-upload-wrapper">
+                <div class="avatar-preview-container">
+                    {% if user.profile.avatar %}
+                        {% cloudinary user.profile.avatar format="jpg" width=150 height=150 crop="fill" class="avatar-image" %}
+                    {% else %}
+                        <div class="avatar-placeholder">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <label for="id_avatar" class="avatar-overlay">
+                        <i class="fas fa-camera"></i>
+                        <span>Изменить</span>
+                    </label>
+                </div>
                 
-                {% if field.name == 'avatar' and user.profile.avatar %}
-                    <div class="current-avatar-preview">
-                        <span class="current-avatar-label">Текущий аватар:</span>
-                        {% cloudinary user.profile.avatar format="jpg" width=100 height=100 crop="fill" class="current-avatar-img" %}
-                    </div>
-                {% endif %}
+                <div class="visually-hidden-input">
+                    <input type="file" name="avatar" accept="image/*" id="id_avatar">
+                </div>
             </div>
-            {% endfor %}
+
+            <!-- Merged Fields -->
+            <div class="form-section-merged">
+                {% for field in user_form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                    <small class="form-error">{{ field.errors.0 }}</small>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                
+                {% for field in profile_form %}
+                {% if field.name != 'avatar' %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                    <small class="form-error">{{ field.errors.0 }}</small>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
 
             <div class="profile-actions">
                 <a href="{% url 'profile' %}" class="btn btn-secondary">Отмена</a>
@@ -55,4 +71,40 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const avatarInput = document.getElementById('id_avatar');
+    const avatarPreviewContainer = document.querySelector('.avatar-preview-container');
+    
+    if (avatarInput && avatarPreviewContainer) {
+        avatarInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Check if there is an existing image
+                    let img = avatarPreviewContainer.querySelector('.avatar-image');
+                    if (!img) {
+                        // If placeholder exists, remove it
+                        const placeholder = avatarPreviewContainer.querySelector('.avatar-placeholder');
+                        if (placeholder) {
+                            placeholder.style.display = 'none';
+                        }
+                        // Create new image
+                        img = document.createElement('img');
+                        img.className = 'avatar-image';
+                        // Insert as first child
+                        avatarPreviewContainer.insertBefore(img, avatarPreviewContainer.firstChild);
+                    }
+                    img.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

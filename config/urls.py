@@ -20,6 +20,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import TemplateView
 from rest_framework.authtoken.views import obtain_auth_token
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from .views import IndexView
@@ -45,6 +46,7 @@ from albums.views import (
 
 urlpatterns = [
     path('', IndexView.as_view(), name='home'),
+    path('security-policy/', TemplateView.as_view(template_name='pages/security_policy.html'), name='security_policy'),
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
     path('dashboard/create/', create_album_view, name='create_album'),
     path('dashboard/album/<uuid:pk>/', album_detail_view, name='album_detail'),

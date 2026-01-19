@@ -8,7 +8,7 @@
 
 {% block content %}
 <div class="container dashboard-container">
-    <div class="dashboard-header" style="justify-content: center;">
+    <div class="dashboard-header dashboard-header-center">
         <h1 class="dashboard-title">Создание Альбома</h1>
     </div>
 
@@ -29,14 +29,14 @@
             <div class="form-group">
                 <label class="form-label">Фотографии</label>
                 <div class="file-drop-zone" id="drop-zone">
-                    <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 0.5rem;"></i>
+                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
                     <p>Нажмите для выбора фото или перетащите их сюда</p>
                 </div>
-                <input type="file" name="photos" id="id_photos" multiple accept="image/*" style="display: none;">
+                <input type="file" name="photos" id="id_photos" multiple accept="image/*" class="hidden-input">
                 <!-- Container for previews -->
-                <div id="preview-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 1rem;">
+                <div id="preview-container" class="preview-container">
                 </div>
-                <div id="file-list" style="margin-top: 1rem; font-size: 0.875rem; color: var(--text-light);"></div>
+                <div id="file-list" class="file-list-info"></div>
             </div>
 
             <div class="album-form-actions">

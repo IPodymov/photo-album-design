@@ -1,12 +1,13 @@
 .hero-section {
-    padding-top: 8rem; /* pt-32 */
-    padding-bottom: 4rem; /* pb-16 */
+    padding-top: 4rem; /* Reduced since body now has navbar offset */
+    padding-bottom: 4rem;
     text-align: center;
 }
 
 @media (min-width: 768px) {
     .hero-section {
-        padding-bottom: 8rem; /* md:pb-32 */
+        padding-top: 6rem;
+        padding-bottom: 8rem;
     }
 }
 
@@ -47,6 +48,25 @@
     display: flex;
     justify-content: center;
     gap: 1rem; /* x-4 */
+    flex-wrap: wrap;
+    padding: 0 1rem;
+}
+
+@media (max-width: 480px) {
+    .hero-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .hero-actions .btn {
+        width: 100%;
+        max-width: 280px;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+        padding: 0 1rem;
+    }
 }
 
 .btn-lg {
@@ -184,4 +204,10 @@
     .cta-container {
         padding: 4rem 2rem; /* lg:px-8 */
     }
+}
+
+.features-list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
 }

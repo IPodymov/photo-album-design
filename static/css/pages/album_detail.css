@@ -4,6 +4,16 @@
     padding: 20px;
 }
 
+@media (max-width: 640px) {
+    .album-container {
+        padding: 10px;
+    }
+    
+    .album-content {
+        padding: 15px;
+    }
+}
+
 .album-content {
     background: white;
     padding: 20px;
@@ -147,6 +157,17 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 20px;
+}
+
+@media (max-width: 640px) {
+    .photos-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+    }
+    
+    .photo-img {
+        height: 150px;
+    }
 }
 
 .photo-card {
@@ -309,6 +330,38 @@
     padding: 24px;
     margin-bottom: 30px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+@media (max-width: 640px) {
+    .management-section {
+        padding: 16px;
+        border-radius: 8px;
+    }
+    
+    .management-section h3 {
+        font-size: 1.2rem;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+    }
+    
+    .actions-group {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .custom-file-upload,
+    .btn-danger {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .add-collaborator-form {
+        flex-direction: column;
+    }
+    
+    .btn-sm {
+        width: 100%;
+    }
 }
 
 .management-section h3 {
@@ -476,3 +529,22 @@
     font-style: italic;
     padding: 10px 0;
 }
+
+/* From album_detail.html inline styles */
+.btn-collage-download {
+    text-decoration: none;
+    padding: 0 1rem;
+    line-height: 2.5rem;
+    display: inline-block;
+}
+
+.public-toggle-form, .inline-form {
+    display: inline-block;
+}
+
+.btn-remove-access {
+    margin: 0;
+    padding: 0;
+}
+
+.hidden { display: none !important; }
