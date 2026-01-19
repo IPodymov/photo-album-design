@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from cloudinary.models import CloudinaryField
 import uuid
+import os
 from typing import Union, Any
 
 
@@ -23,6 +24,11 @@ def get_album_media_path(
     filename: str
 ) -> str:
     """Общая функция для формирования путей медиафайлов альбома."""
+    # Укорачиваем имя файла, чтобы избежать проблем с длиной пути, даже с увеличенным лимитом
+    name, ext = os.path.splitext(filename)
+    if len(name) > 50:
+         filename = f"{name[:50]}{ext}"
+         
     return f"user_{user_id}/album_{album_id}/{subfolder}/{filename}"
 
 
