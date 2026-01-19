@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link href="{% static 'css/pages/dashboard.css' %}" rel="stylesheet">
+<link href="{% static 'css/pages/auth.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container dashboard-container">
+    <div class="dashboard-header" style="justify-content: center;">
+        <h1 class="dashboard-title">Создание Альбома</h1>
+    </div>
+
+    <div class="upload-form-container">
+        <form method="post" enctype="multipart/form-data" class="auth-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="id_title" class="form-label">Название альбома</label>
+                <input type="text" name="title" id="id_title" class="form-input" required placeholder="Например: Отпуск 2024">
+            </div>
+
+            <div class="form-group">
+                <label for="id_description" class="form-label">Описание (необязательно)</label>
+                <textarea name="description" id="id_description" class="form-input" rows="3"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Фотографии</label>
+                <div class="file-drop-zone" onclick="document.getElementById('id_photos').click()">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 0.5rem;"></i>
+                    <p>Нажмите для выбора фото</p>
+                    <input type="file" name="photos" id="id_photos" multiple accept="image/*" style="display: none;" onchange="updateFileList(this)">
+                </div>
+                <div id="file-list" style="margin-top: 1rem; font-size: 0.875rem; color: var(--text-light);"></div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary" style="flex: 1; text-decoration: none; text-align: center;">Отмена</a>
+                <button type="submit" class="auth-button" style="margin-top: 0; flex: 1;">Создать</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function updateFileList(input) {
+    const list = document.getElementById('file-list');
+    if (input.files.length > 0) {
+        list.innerText = `Выбрано файлов: ${input.files.length}`;
+    } else {
+        list.innerText = '';
+    }
+}
+</script>
+{% endblock %}

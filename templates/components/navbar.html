@@ -1,0 +1,31 @@
+<nav class="navbar">
+    <div class="container navbar-content">
+        <a href="{% url 'home' %}" class="logo" style="text-decoration: none;">
+            <i class="fas fa-camera-retro"></i>
+            <span>PhotoDesign</span>
+        </a>
+        <div class="nav-links">
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="nav-link nav-link-primary">Мои Альбомы</a>
+                <span class="nav-link">|</span>
+                <a href="{% url 'profile' %}" class="nav-link" style="display: flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+                    {% if user.profile.avatar %}
+                       {% load cloudinary %}
+                       {% cloudinary user.profile.avatar format="jpg" width=32 height=32 crop="fill" class="rounded-full" style="border-radius: 50%;" %}
+                    {% else %}
+                        <i class="fas fa-user-circle" style="font-size: 1.5rem;"></i>
+                    {% endif %}
+                    {{ user.username }}
+                </a>
+                <form action="{% url 'web_logout' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="nav-link" style="background:none; border:none; cursor:pointer; font: inherit;">Выйти</button>
+                </form>
+            {% else %}
+                <a href="/api/schema/swagger-ui/" class="nav-link">API Docs</a>
+                <a href="{% url 'login' %}" class="nav-link nav-link-primary">Войти</a>
+                <a href="{% url 'register' %}" class="btn btn-primary">Регистрация</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>

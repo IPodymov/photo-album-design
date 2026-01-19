@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load cloudinary %}
+
+{% block extra_css %}
+<link href="{% static 'css/pages/auth.css' %}" rel="stylesheet">
+<link href="{% static 'css/pages/profile.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card profile-card">
+        <div class="auth-header">
+            <h1 class="auth-title">Редактирование профиля</h1>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="auth-form">
+            {% csrf_token %}
+            
+            <h3 class="profile-section-title">Основная информация</h3>
+            {% for field in user_form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <small class="form-error">{{ field.errors.0 }}</small>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="profile-section-spacer"></div>
+            <h3 class="profile-section-title">Дополнительно</h3>
+            
+            {% for field in profile_form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <small class="form-error">{{ field.errors.0 }}</small>
+                {% endif %}
+                
+                {% if field.name == 'avatar' and user.profile.avatar %}
+                    <div class="current-avatar-preview">
+                        <span class="current-avatar-label">Текущий аватар:</span>
+                        {% cloudinary user.profile.avatar format="jpg" width=100 height=100 crop="fill" class="current-avatar-img" %}
+                    </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="profile-actions">
+                <a href="{% url 'profile' %}" class="btn btn-secondary">Отмена</a>
+                <button type="submit" class="auth-button">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

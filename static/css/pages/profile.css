@@ -1,0 +1,57 @@
+/* Profile Page Specific Styles */
+
+/* Extend auth-card for wider profile form */
+.auth-card.profile-card {
+    max-width: 40rem;
+}
+
+.profile-section-title {
+    font-size: 1.1rem;
+    color: var(--gray-800);
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--gray-200);
+    padding-bottom: 0.5rem;
+}
+
+.profile-section-spacer {
+    margin-top: 2rem;
+}
+
+.form-error {
+    color: var(--error-color, red);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.current-avatar-preview {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.current-avatar-label {
+    font-size: 0.875rem;
+    color: var(--text-light);
+}
+
+.current-avatar-img {
+    border-radius: var(--radius-md);
+    object-fit: cover;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.profile-actions .btn {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+}
+
+.profile-actions .auth-button {
+    margin-top: 0;
+}

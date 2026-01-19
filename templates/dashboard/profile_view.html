@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load cloudinary %}
+
+{% block extra_css %}
+<link href="{% static 'css/pages/auth.css' %}" rel="stylesheet">
+<link href="{% static 'css/pages/profile.css' %}" rel="stylesheet">
+<link href="{% static 'css/pages/profile_view.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card profile-card">
+        <div class="profile-header">
+            {% if user.profile.avatar %}
+                {% cloudinary user.profile.avatar format="jpg" width=300 height=300 crop="fill" class="profile-avatar-large" %}
+            {% else %}
+                <div class="profile-avatar-placeholder">
+                    <i class="fas fa-user"></i>
+                </div>
+            {% endif %}
+            <h1 class="profile-username">{{ user.username }}</h1>
+            <p class="profile-email">{{ user.email }}</p>
+        </div>
+
+        <div class="profile-details">
+            {% if user.first_name or user.last_name %}
+            <div class="profile-info-group">
+                <span class="profile-label">Полное имя</span>
+                <span class="profile-value">
+                    {{ user.first_name }} {{ user.last_name }}
+                </span>
+            </div>
+            {% endif %}
+
+            {% if user.profile.bio %}
+            <div class="profile-info-group">
+                <span class="profile-label">О себе</span>
+                <div class="profile-value profile-bio">{{ user.profile.bio|linebreaks }}</div>
+            </div>
+            {% endif %}
+
+            <div class="profile-actions">
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary">Мои Альбомы</a>
+                <a href="{% url 'edit_profile' %}" class="auth-button btn-primary" style="text-decoration: none; text-align: center; justify-content: center;">Редактировать</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
