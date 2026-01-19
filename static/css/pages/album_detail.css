@@ -15,10 +15,33 @@
 .album-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start; /* Better alignment for multiline titles */
     margin-bottom: 20px;
     flex-wrap: wrap;
     gap: 20px;
+}
+
+@media (max-width: 768px) {
+    .album-header {
+        flex-direction: column;
+    }
+    
+    .album-actions {
+        width: 100%;
+        text-align: left;
+    }
+    
+    .album-actions .btn-toggle, 
+    .album-actions a {
+        display: block;
+        margin-bottom: 10px;
+        text-align: center;
+        width: 100%;
+    }
+
+    .public-toggle-form {
+        display: block;
+    }
 }
 
 .album-title-group h1 {
@@ -87,6 +110,16 @@
     display: flex;
     gap: 10px;
     margin-top: 5px;
+}
+
+@media (max-width: 640px) {
+    .share-input-group {
+        flex-direction: column;
+    }
+    
+    .share-input-group .btn-copy {
+        width: 100%;
+    }
 }
 
 .share-input {

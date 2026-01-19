@@ -39,9 +39,9 @@
                 <div id="file-list" style="margin-top: 1rem; font-size: 0.875rem; color: var(--text-light);"></div>
             </div>
 
-            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                <a href="{% url 'dashboard' %}" class="btn btn-secondary" style="flex: 1; text-decoration: none; text-align: center;">Отмена</a>
-                <button type="submit" class="auth-button" style="margin-top: 0; flex: 1;">Создать</button>
+            <div class="album-form-actions">
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary cancel-btn">Отмена</a>
+                <button type="submit" class="auth-button submit-btn">Создать</button>
             </div>
         </form>
     </div>

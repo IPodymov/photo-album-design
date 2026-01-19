@@ -14,6 +14,26 @@
     align-items: center;
 }
 
+@media (max-width: 768px) {
+    .navbar-content {
+        height: auto;
+        flex-direction: column;
+        padding: 1rem 0;
+        gap: 1rem;
+    }
+    
+    .nav-links {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .logo {
+        margin-bottom: 0.5rem;
+    }
+}
+
 .logo {
     display: flex;
     align-items: center;

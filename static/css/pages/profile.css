@@ -55,3 +55,9 @@
 .profile-actions .auth-button {
     margin-top: 0;
 }
+
+@media (max-width: 480px) {
+    .profile-actions {
+        flex-direction: column;
+    }
+}
