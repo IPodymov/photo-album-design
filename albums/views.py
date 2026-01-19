@@ -490,3 +490,154 @@ def profile_view(request):
         UserProfile.objects.create(user=request.user)
 
     return render(request, "dashboard/profile_view.html", {"user": request.user})
+
+
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponseForbidden, HttpResponse
+
+
+def album_detail_view(request, pk):
+    album = get_object_or_404(Album, pk=pk)
+
+    # Check permissions
+    is_owner = request.user.is_authenticated and album.user == request.user
+    is_editor = request.user.is_authenticated and (is_owner or album.editors.filter(id=request.user.id).exists())
+
+    if not is_editor and not album.is_public:
+        # If user is not owner/editor and album is not public, deny access
+        if not request.user.is_authenticated:
+            return redirect("login")
+        return HttpResponseForbidden("You do not have permission to view this album.")
+
+    photos = album.photos.all()
+
+    context = {
+        "album": album,
+        "photos": photos,
+        "is_owner": is_owner,
+        "is_editor": is_editor,
+        "absolute_uri": request.build_absolute_uri(),  # For the share link
+    }
+    return render(request, "dashboard/album_detail.html", context)
+
+
+@login_required
+def add_photos_view(request, pk):
+    album = get_object_or_404(Album, pk=pk)
+    
+    # Permission check: Owner or Editor
+    is_owner = album.user == request.user
+    is_editor = album.editors.filter(id=request.user.id).exists()
+    
+    if not (is_owner or is_editor):
+        return HttpResponseForbidden("You do not have permission to add photos to this album.")
+
+    if request.method == "POST":
+        photos = request.FILES.getlist("photos")
+        if photos:
+            for photo in photos:
+                Photo.objects.create(album=album, image=photo)
+            messages.success(request, f"Added {len(photos)} photos.")
+        else:
+            messages.warning(request, "No photos selected.")
+            
+    return redirect("album_detail", pk=pk)
+
+
+@login_required
+def add_collaborator_view(request, pk):
+    album = get_object_or_404(Album, pk=pk)
+    
+    # Permission check: Owner only
+    if album.user != request.user:
+        return HttpResponseForbidden("Only the album owner can add collaborators.")
+
+    if request.method == "POST":
+        username = request.POST.get("username")
+        try:
+            user = User.objects.get(username=username)
+            if user == request.user:
+                messages.error(request, "You are already the owner.")
+            elif album.editors.filter(id=user.id).exists():
+                messages.info(request, f"{user.username} is already an editor.")
+            else:
+                album.editors.add(user)
+                messages.success(request, f"Added {user.username} as editor.")
+        except User.DoesNotExist:
+            messages.error(request, f"User '{username}' not found.")
+            
+    return redirect("album_detail", pk=pk)
+
+
+@login_required
+def remove_collaborator_view(request, pk, user_id):
+    album = get_object_or_404(Album, pk=pk)
+    
+    # Permission check: Owner only
+    if album.user != request.user:
+        return HttpResponseForbidden("Only the album owner can remove collaborators.")
+
+    if request.method == "POST":
+        user_to_remove = get_object_or_404(User, pk=user_id)
+        album.editors.remove(user_to_remove)
+        messages.success(request, f"Removed access for {user_to_remove.username}.")
+        
+    return redirect("album_detail", pk=pk)
+
+
+@login_required
+def delete_album_view(request, pk):
+    album = get_object_or_404(Album, pk=pk)
+    
+    # Permission check: Owner only
+    if album.user != request.user:
+        return HttpResponseForbidden("Only the album owner can delete the album.")
+
+    if request.method == "POST":
+        album.delete()
+        messages.success(request, "Album deleted successfully.")
+        return redirect("dashboard")
+        
+    return redirect("album_detail", pk=pk)
+
+
+@login_required
+def toggle_public_view(request, pk):
+    album = get_object_or_404(Album, pk=pk)
+
+    if album.user != request.user:
+        return HttpResponseForbidden("You are not the owner of this album.")
+
+    if request.method == "POST":
+        album.is_public = not album.is_public
+        album.save()
+        status_msg = "published" if album.is_public else "private"
+        messages.success(request, f"Album is now {status_msg}.")
+
+    return redirect("album_detail", pk=pk)
+
+
+def generate_collage_view(request, pk):
+    album = get_object_or_404(Album, pk=pk)
+
+    # Check permissions (same as detail view)
+    is_owner = request.user.is_authenticated and album.user == request.user
+    is_editor = request.user.is_authenticated and (is_owner or album.editors.filter(id=request.user.id).exists())
+
+    if not is_editor and not album.is_public:
+         if not request.user.is_authenticated:
+            return redirect("login")
+         return HttpResponseForbidden("You do not have permission to view this album.")
+
+    photos = album.photos.all()
+    if not photos:
+        return HttpResponse("No photos in album", status=404)
+        
+    collage_file = create_collage_image(photos, output_format="PNG")
+    
+    if not collage_file:
+         return HttpResponse("Error creating collage", status=500)
+
+    response = HttpResponse(collage_file.read(), content_type="image/png")
+    response['Content-Disposition'] = f'attachment; filename="collage_{album.id}.png"'
+    return response

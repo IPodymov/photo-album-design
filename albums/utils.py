@@ -26,7 +26,7 @@ def calculate_grid(count):
     return cols, rows
 
 
-def create_collage_image(photos, cell_size=COLLAGE_CELL_SIZE):
+def create_collage_image(photos, cell_size=COLLAGE_CELL_SIZE, output_format=COLLAGE_FORMAT):
     """Создаёт коллаж из списка фотографий."""
     if not photos:
         return None
@@ -50,7 +50,10 @@ def create_collage_image(photos, cell_size=COLLAGE_CELL_SIZE):
     collage_height = rows * cell_size
 
     # Создание коллажа
-    collage = Image.new("RGB", (collage_width, collage_height), COLLAGE_BG_COLOR)
+    mode = "RGB" if output_format == "JPEG" else "RGBA"
+    bg_color = COLLAGE_BG_COLOR if output_format == "JPEG" else (255, 255, 255, 0) # Transparent for PNG or White? User didn't specify, but white is safer as transparency can be weird for collages. Let's stick to user request "png format". Usually PNG implies transparency support, but for photo album collage white bg is standard. I'll keep white bg but format PNG.
+    
+    collage = Image.new(mode, (collage_width, collage_height), COLLAGE_BG_COLOR)
 
     for i, img in enumerate(pil_images):
         x = (i % cols) * cell_size
@@ -58,8 +61,9 @@ def create_collage_image(photos, cell_size=COLLAGE_CELL_SIZE):
         collage.paste(img, (x, y))
 
     buffer = BytesIO()
-    collage.save(buffer, format=COLLAGE_FORMAT)
-    return ContentFile(buffer.getvalue(), name="collage.jpg")
+    collage.save(buffer, format=output_format)
+    ext = "jpg" if output_format == "JPEG" else output_format.lower()
+    return ContentFile(buffer.getvalue(), name=f"collage.{ext}")
 
 
 def export_queryset_to_excel(queryset, headers, row_extractor, sheet_title, filename_prefix):

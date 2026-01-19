@@ -28,10 +28,13 @@
 
             <div class="form-group">
                 <label class="form-label">Фотографии</label>
-                <div class="file-drop-zone" onclick="document.getElementById('id_photos').click()">
+                <div class="file-drop-zone" id="drop-zone">
                     <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 0.5rem;"></i>
-                    <p>Нажмите для выбора фото</p>
-                    <input type="file" name="photos" id="id_photos" multiple accept="image/*" style="display: none;" onchange="updateFileList(this)">
+                    <p>Нажмите для выбора фото или перетащите их сюда</p>
+                </div>
+                <input type="file" name="photos" id="id_photos" multiple accept="image/*" style="display: none;">
+                <!-- Container for previews -->
+                <div id="preview-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 1rem;">
                 </div>
                 <div id="file-list" style="margin-top: 1rem; font-size: 0.875rem; color: var(--text-light);"></div>
             </div>
@@ -43,15 +46,8 @@
         </form>
     </div>
 </div>
+{% endblock %}
 
-<script>
-function updateFileList(input) {
-    const list = document.getElementById('file-list');
-    if (input.files.length > 0) {
-        list.innerText = `Выбрано файлов: ${input.files.length}`;
-    } else {
-        list.innerText = '';
-    }
-}
-</script>
+{% block extra_js %}
+<script src="{% static 'js/pages/create_album.js' %}"></script>
 {% endblock %}

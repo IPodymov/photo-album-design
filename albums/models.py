@@ -5,8 +5,8 @@ import uuid
 
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    avatar = CloudinaryField('avatar', blank=True, null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    avatar = CloudinaryField("avatar", blank=True, null=True)
     bio = models.TextField(max_length=500, blank=True)
     location = models.CharField(max_length=30, blank=True)
     birth_date = models.DateField(null=True, blank=True)
@@ -22,23 +22,21 @@ def get_album_media_path(user_id, album_id, subfolder, filename):
 
 def photo_directory_path(instance, filename):
     """Путь для загрузки фотографий."""
-    return get_album_media_path(
-        instance.album.user.id, instance.album.id, "photos", filename
-    )
+    return get_album_media_path(instance.album.user.id, instance.album.id, "photos", filename)
 
 
 def collage_directory_path(instance, filename):
     """Путь для загрузки коллажей."""
-    return get_album_media_path(
-        instance.album.user.id, instance.album.id, "collages", filename
-    )
+    return get_album_media_path(instance.album.user.id, instance.album.id, "collages", filename)
 
 
 class Album(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="albums")
+    editors = models.ManyToManyField(User, related_name="editable_albums", blank=True)
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
+    is_public = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -66,7 +64,9 @@ class Collage(models.Model):
 
 
 class BugReport(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bug_reports", null=True, blank=True)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="bug_reports", null=True, blank=True
+    )
     title = models.CharField(max_length=255)
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)

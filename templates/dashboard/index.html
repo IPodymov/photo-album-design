@@ -1,48 +1,43 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block extra_css %}
-<link href="{% static 'css/pages/dashboard.css' %}" rel="stylesheet">
-{% endblock %}
-
-{% block content %}
+{% extends 'base.html' %} {% load static %} {% block extra_css %}
+<link href="{% static 'css/pages/dashboard.css' %}" rel="stylesheet" />
+{% endblock %} {% block content %}
 <div class="container dashboard-container">
-    <div class="dashboard-header">
-        <h1 class="dashboard-title">Мои Альбомы</h1>
-        <a href="{% url 'create_album' %}" class="btn btn-primary">
-            <i class="fas fa-plus" style="margin-right: 0.5rem;"></i> Новый Альбом
-        </a>
-    </div>
+  <div class="dashboard-header">
+    <h1 class="dashboard-title">Мои Альбомы</h1>
+    <a href="{% url 'create_album' %}" class="btn btn-primary">
+      <i class="fas fa-plus" style="margin-right: 0.5rem"></i> Новый Альбом
+    </a>
+  </div>
 
-    {% if albums %}
-    <div class="albums-grid">
-        {% for album in albums %}
-        <a href="#" class="album-card">
-            <div class="album-preview">
-                {% if album.photos.first %}
-                    <img src="{{ album.photos.first.image.url }}" alt="{{ album.title }}">
-                {% else %}
-                    <i class="fas fa-images album-preview-icon"></i>
-                {% endif %}
-            </div>
-            <div class="album-content">
-                <h3 class="album-title">{{ album.title }}</h3>
-                <div class="album-meta">
-                    <span><i class="fas fa-camera"></i> {{ album.photos.count }} фото</span>
-                    <span>{{ album.created_at|date:"d.m.Y" }}</span>
-                </div>
-            </div>
-        </a>
-        {% endfor %}
-    </div>
-    {% else %}
-    <div class="empty-state">
-        <div class="empty-state-icon">
-            <i class="fas fa-folder-open"></i>
+  {% if albums %}
+  <div class="albums-grid">
+    {% for album in albums %}
+    <a href="{% url 'album_detail' album.id %}" class="album-card">
+      <div class="album-preview">
+        {% if album.photos.first %}
+        <img src="{{ album.photos.first.image.url }}" alt="{{ album.title }}" />
+        {% else %}
+        <i class="fas fa-images album-preview-icon"></i>
+        {% endif %}
+      </div>
+      <div class="album-content">
+        <h3 class="album-title">{{ album.title }}</h3>
+        <div class="album-meta">
+          <span><i class="fas fa-camera"></i> {{ album.photos.count }} фото</span>
+          <span>{{ album.created_at|date:"d.m.Y" }}</span>
         </div>
-        <p class="empty-state-text">У вас пока нет ни одного альбома.</p>
-        <a href="{% url 'create_album' %}" class="btn btn-primary">Создать первый альбом</a>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon">
+      <i class="fas fa-folder-open"></i>
     </div>
-    {% endif %}
+    <p class="empty-state-text">У вас пока нет ни одного альбома.</p>
+    <a href="{% url 'create_album' %}" class="btn btn-primary">Создать первый альбом</a>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}
