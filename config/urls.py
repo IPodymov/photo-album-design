@@ -45,10 +45,14 @@ urlpatterns = [
     path("admin/", admin.site.urls),
 
     # Web Auth
-    path('accounts/login/', LoginView.as_view(template_name='auth/login.html', authentication_form=StyledAuthenticationForm), name='login'),
+    path(
+        'accounts/login/',
+        LoginView.as_view(template_name='auth/login.html', authentication_form=StyledAuthenticationForm),
+        name='login'
+    ),
     path('accounts/logout/', LogoutView.as_view(next_page='home'), name='web_logout'),
     path('accounts/register/', register_view, name='register'),
-    
+
     # Swagger UI & Schema
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),

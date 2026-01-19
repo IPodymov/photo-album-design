@@ -3,11 +3,13 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
-from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import login
-from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.views.generic import ListView
+
 from .models import Album, Photo, Collage, BugReport, UserProfile
 from .forms import StyledUserCreationForm, UserForm, ProfileForm
 from .serializers import (
@@ -137,7 +139,7 @@ class AlbumViewSet(UserOwnedMixin, viewsets.ModelViewSet):
 
         # "Generate based on best shots"
         # We look for photos marked as favorite first
-        use_best = request.data.get("use_best_shots", False)  # Optional flag from frontend
+        # use_best = request.data.get("use_best_shots", False)  # Optional flag from frontend
 
         photos = album.photos.all()
 
@@ -236,34 +238,33 @@ def register_view(request):
         form = StyledUserCreationForm()
     return render(request, "auth/register.html", {"form": form})
 
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-from django.views.generic import ListView
 
-@method_decorator(login_required, name='dispatch')
+@method_decorator(login_required, name="dispatch")
 class DashboardView(ListView):
     model = Album
-    template_name = 'dashboard/index.html'
-    context_object_name = 'albums'
+    template_name = "dashboard/index.html"
+    context_object_name = "albums"
 
     def get_queryset(self):
-        return Album.objects.filter(user=self.request.user).order_by('-created_at')
+        return Album.objects.filter(user=self.request.user).order_by("-created_at")
+
 
 @login_required
 def create_album_view(request):
-    if request.method == 'POST':
-        title = request.POST.get('title')
-        description = request.POST.get('description')
-        photos = request.FILES.getlist('photos')
-        
+    if request.method == "POST":
+        title = request.POST.get("title")
+        description = request.POST.get("description")
+        photos = request.FILES.getlist("photos")
+
         album = Album.objects.create(user=request.user, title=title, description=description)
-        
+
         for photo in photos:
             Photo.objects.create(album=album, image=photo)
-            
-        return redirect('dashboard')
-    
-    return render(request, 'dashboard/create_album.html')
+
+        return redirect("dashboard")
+
+    return render(request, "dashboard/create_album.html")
+
 
 @login_required
 def edit_profile_view(request):
@@ -272,23 +273,23 @@ def edit_profile_view(request):
     except UserProfile.DoesNotExist:
         UserProfile.objects.create(user=request.user)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         user_form = UserForm(request.POST, instance=request.user)
         profile_form = ProfileForm(request.POST, request.FILES, instance=request.user.profile)
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
-            messages.success(request, 'Ваш профиль был успешно обновлен!')
-            return redirect('profile')
+            messages.success(request, "Ваш профиль был успешно обновлен!")
+            return redirect("profile")
         else:
-            messages.error(request, 'Пожалуйста, исправьте ошибки ниже.')
+            messages.error(request, "Пожалуйста, исправьте ошибки ниже.")
     else:
         user_form = UserForm(instance=request.user)
         profile_form = ProfileForm(instance=request.user.profile)
-    return render(request, 'dashboard/profile.html', {
-        'user_form': user_form,
-        'profile_form': profile_form
-    })
+    return render(
+        request, "dashboard/profile.html", {"user_form": user_form, "profile_form": profile_form}
+    )
+
 
 @login_required
 def profile_view(request):
@@ -296,7 +297,5 @@ def profile_view(request):
         request.user.profile
     except UserProfile.DoesNotExist:
         UserProfile.objects.create(user=request.user)
-    
-    return render(request, 'dashboard/profile_view.html', {
-        'user': request.user
-    })
+
+    return render(request, "dashboard/profile_view.html", {"user": request.user})

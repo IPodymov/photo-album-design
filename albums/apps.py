@@ -5,4 +5,4 @@ class AlbumsConfig(AppConfig):
     name = 'albums'
 
     def ready(self):
-        import albums.signals
+        import albums.signals  # noqa: F401

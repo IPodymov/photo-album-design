@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from cloudinary.models import CloudinaryField
 import uuid
-import os
 
 
 class UserProfile(models.Model):
@@ -67,7 +66,7 @@ class Collage(models.Model):
 
 
 class BugReport(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bug_reports")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bug_reports", null=True, blank=True)
     title = models.CharField(max_length=255)
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
