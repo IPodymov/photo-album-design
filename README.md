@@ -5,15 +5,15 @@
 ## 🚀 Key Features
 
 - **User Profiles**: Custom profiles with Cloudinary-hosted avatars.
-- **Albums & Photos**: Upload, extended management of personal photo collections.
-- **Automated Collages**: Tools to generate collages from album photos.
+- **Albums & Photos**: Upload with drag-and-drop support, extended management of personal photo collections.
+- **Automated Collages**: Tools to generate and download PNG collages from album photos.
 - **Hybrid Interface**: Full support for both Web UI (Django Templates) and REST API (DRF).
 - **Diagnostics**: Built-in bug reporting system.
 
 ## 🛠 Tech Stack
 
 - **Backend**: Python 3.10+, Django 6.0, Django Rest Framework
-- **Storage**: Cloudinary (Avatars), Local File System (Albums)
+- **Storage**: Cloudinary (Avatars & Photos in Production), Local File System (Dev/Debug)
 - **Database**: SQLite (Default)
 - **Documentation**: Swagger/OpenAPI
 

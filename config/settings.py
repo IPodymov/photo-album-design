@@ -14,6 +14,9 @@ from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
 import os
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 load_dotenv()
 
@@ -163,8 +166,9 @@ STATICFILES_DIRS = [
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Use Cloudinary in production (when DEBUG is False) or if explicitly requested
-USE_CLOUDINARY = os.getenv('USE_CLOUDINARY', 'False') == 'True' or not DEBUG
+# Use Cloudinary in production, or if explicitly requested, or if on Railway
+IS_RAILWAY = os.getenv('RAILWAY_ENVIRONMENT_NAME') is not None
+USE_CLOUDINARY = os.getenv('USE_CLOUDINARY', 'False') == 'True' or not DEBUG or IS_RAILWAY
 
 STORAGES = {
     "default": {
@@ -188,3 +192,12 @@ CLOUDINARY_STORAGE = {
     'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
     'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
 }
+
+# Force HTTPS for Cloudinary (Fixes Mixed Content)
+cloudinary.config( 
+  cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME'), 
+  api_key = os.getenv('CLOUDINARY_API_KEY'), 
+  api_secret = os.getenv('CLOUDINARY_API_SECRET'),
+  secure = True
+)
+

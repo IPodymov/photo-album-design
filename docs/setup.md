@@ -37,7 +37,12 @@
    ```env
    # Django
    SECRET_KEY=your_secret_key_here
-   DEBUG=True
+   DEBUG=True  # Set to False in production
+   ALLOWED_HOSTS=your_host,127.0.0.1
+
+   # Storage Configuration
+   # Uses Cloudinary if USE_CLOUDINARY=True or DEBUG=False
+   USE_CLOUDINARY=False
 
    # Cloudinary (File Storage)
    CLOUDINARY_CLOUD_NAME=your_cloud_name
