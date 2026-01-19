@@ -52,7 +52,7 @@ class Album(models.Model):
 
 class Photo(models.Model):
     album = models.ForeignKey(Album, on_delete=models.CASCADE, related_name="photos")
-    image = models.ImageField(upload_to=photo_directory_path)
+    image = models.ImageField(upload_to=photo_directory_path, max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
     is_favorite = models.BooleanField(default=False)  # For 'best shots' feature
 
@@ -62,7 +62,7 @@ class Photo(models.Model):
 
 class Collage(models.Model):
     album = models.ForeignKey(Album, on_delete=models.CASCADE, related_name="collages")
-    image = models.ImageField(upload_to=collage_directory_path)
+    image = models.ImageField(upload_to=collage_directory_path, max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
