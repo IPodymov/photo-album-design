@@ -168,13 +168,12 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Use Cloudinary in production, or if explicitly requested, or if on Railway
 IS_RAILWAY = os.getenv('RAILWAY_ENVIRONMENT_NAME') is not None
-USE_CLOUDINARY = os.getenv('USE_CLOUDINARY', 'False') == 'True' or not DEBUG or IS_RAILWAY
+# Force Cloudinary for usage as per user request
+USE_CLOUDINARY = True 
 
 STORAGES = {
     "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage" 
-                   if USE_CLOUDINARY 
-                   else "django.core.files.storage.FileSystemStorage",
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
