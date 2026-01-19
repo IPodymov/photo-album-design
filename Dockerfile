@@ -10,11 +10,6 @@ ENV PYTHONUNBUFFERED 1
 # Устанавливаем рабочую директорию внутри контейнера
 WORKDIR /app
 
-# Устанавливаем зависимости системы (если нужны для Pillow или PostgreSQL)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
-
 # Копируем файл зависимостей
 COPY requirements.txt .
 
