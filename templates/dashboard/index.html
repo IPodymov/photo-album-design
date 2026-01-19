@@ -15,7 +15,7 @@
     <a href="{% url 'album_detail' album.id %}" class="album-card">
       <div class="album-preview">
         {% if album.photos.first %}
-        <img src="{{ album.photos.first.image.url }}" alt="{{ album.title }}" />
+        <img src="{{ album.photos.first.image.url }}" alt="{{ album.title }}" loading="lazy" />
         {% else %}
         <i class="fas fa-images album-preview-icon"></i>
         {% endif %}

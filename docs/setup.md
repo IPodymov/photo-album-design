@@ -31,20 +31,23 @@
    ```
 
 4. **Environment Configuration**
-   Create a `.env` file in the root directory. You can copy `.env.example` if it exists.
-   Required variables:
+   Create a `.env` file in the root directory. You can copy `.env.example`:
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Required variables in `.env`:
 
    ```env
    # Django
    SECRET_KEY=your_secret_key_here
    DEBUG=True  # Set to False in production
    ALLOWED_HOSTS=your_host,127.0.0.1
-
-   # Storage Configuration
-   # Uses Cloudinary if USE_CLOUDINARY=True or DEBUG=False
-   USE_CLOUDINARY=False
-
-   # Cloudinary (File Storage)
+   
+   # Database (Optional - defaults to SQLite if not set)
+   # DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+   
+   # Cloudinary (Required for Media Storage)
    CLOUDINARY_CLOUD_NAME=your_cloud_name
    CLOUDINARY_API_KEY=your_api_key
    CLOUDINARY_API_SECRET=your_api_secret
@@ -72,8 +75,16 @@
 
 ## Running Tests
 
-(Instructions for running tests if applicable)
+To run the full test suite (which includes model, view, and integration tests):
 
 ```bash
 python manage.py test
 ```
+
+The testing environment is configured to use a temporary file storage system instead of Cloudinary to ensure speed and isolation.
+
+## Static Files
+
+The project uses **WhiteNoise** for serving static files. 
+- Run `python manage.py collectstatic` to gather static files into the `staticfiles` directory before deployment.
+

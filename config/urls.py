@@ -42,6 +42,8 @@ from albums.views import (
     remove_collaborator_view,
     delete_album_view,
     generate_collage_view,
+    share_photo_view,
+    public_photo_view,
 )
 
 urlpatterns = [
@@ -56,6 +58,11 @@ urlpatterns = [
     path('dashboard/album/<uuid:pk>/add-collaborator/', add_collaborator_view, name='add_collaborator'),
     path('dashboard/album/<uuid:pk>/remove-collaborator/<int:user_id>/', remove_collaborator_view, name='remove_collaborator'),
     path('dashboard/album/<uuid:pk>/delete/', delete_album_view, name='delete_album'),
+    
+    # Photo Sharing
+    path('dashboard/photo/<int:pk>/share/', share_photo_view, name='share_photo'),
+    path('s/photo/<uuid:token>/', public_photo_view, name='public_photo'),
+
     path('accounts/profile/', profile_view, name='profile'),
     path('accounts/profile/edit/', edit_profile_view, name='edit_profile'),
     path("admin/", admin.site.urls),

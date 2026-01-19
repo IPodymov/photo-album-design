@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load cloudinary %}
-
 {% block extra_css %}
 <link href="{% static 'css/pages/auth.css' %}" rel="stylesheet">
 <link href="{% static 'css/pages/profile.css' %}" rel="stylesheet">
@@ -21,7 +19,7 @@
             <div class="avatar-upload-wrapper">
                 <div class="avatar-preview-container">
                     {% if user.profile.avatar %}
-                        {% cloudinary user.profile.avatar format="jpg" width=150 height=150 crop="fill" class="avatar-image" %}
+                        <img src="{{ user.profile.avatar.url }}" class="avatar-image" width="150" height="150" alt="Avatar" loading="lazy" style="object-fit: cover;">
                     {% else %}
                         <div class="avatar-placeholder">
                             <i class="fas fa-user"></i>

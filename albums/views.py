@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.models import User
@@ -11,6 +11,8 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.utils import timezone
 from django.views.generic import ListView
+from django.http import JsonResponse, HttpResponseForbidden, Http404, HttpResponse
+from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
 from typing import Any
 
@@ -655,3 +657,55 @@ def generate_collage_view(request: HttpRequest, pk: uuid.UUID) -> HttpResponse:
     response = HttpResponse(collage.image.open(), content_type="image/png")
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
     return response
+
+
+@login_required
+def share_photo_view(request, pk):
+    """
+    Генерация ссылки для шаринга отдельной фотографии.
+    """
+    photo = get_object_or_404(Photo, pk=pk)
+
+    # Check permission (owner or editor of the album)
+    album = photo.album
+    if album.user != request.user and request.user not in album.editors.all():
+        return JsonResponse({"status": "error", "message": "Permission denied"}, status=403)
+
+    if request.method == "POST":
+        data = request.POST
+        action = data.get("action")
+
+        # If calling via fetch with JSON body
+        if not action and request.body:
+            import json
+
+            try:
+                body = json.loads(request.body)
+                action = body.get("action")
+            except:
+                pass
+
+        if action == "generate":
+            if not photo.public_token:
+                photo.public_token = uuid.uuid4()
+                photo.save()
+
+            link = request.build_absolute_uri(reverse("public_photo", args=[photo.public_token]))
+            return JsonResponse({"status": "ok", "link": link})
+
+        elif action == "disable":
+            photo.public_token = None
+            photo.save()
+            return JsonResponse({"status": "ok", "message": "Link disabled"})
+
+    return JsonResponse({"status": "error", "message": "Invalid request method"}, status=405)
+
+
+def public_photo_view(request, token):
+    """
+    Публичный просмотр фотографии по токену.
+    """
+    photo = get_object_or_404(Photo, public_token=token)
+
+    context = {"photo": photo, "album": photo.album, "download_name": f"photo_{photo.id}.jpg"}
+    return render(request, "public_photo.html", context)

@@ -17,18 +17,13 @@ class UserProfile(models.Model):
         return f"{self.user.username}'s profile"
 
 
-def get_album_media_path(
-    user_id: Any, 
-    album_id: Any, 
-    subfolder: str, 
-    filename: str
-) -> str:
+def get_album_media_path(user_id: Any, album_id: Any, subfolder: str, filename: str) -> str:
     """Общая функция для формирования путей медиафайлов альбома."""
     # Укорачиваем имя файла, чтобы избежать проблем с длиной пути, даже с увеличенным лимитом
     name, ext = os.path.splitext(filename)
     if len(name) > 50:
-         filename = f"{name[:50]}{ext}"
-         
+        filename = f"{name[:50]}{ext}"
+
     return f"user_{user_id}/album_{album_id}/{subfolder}/{filename}"
 
 
@@ -61,6 +56,7 @@ class Photo(models.Model):
     image = models.ImageField(upload_to=photo_directory_path, max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
     is_favorite = models.BooleanField(default=False)  # For 'best shots' feature
+    public_token = models.UUIDField(editable=False, null=True, blank=True, unique=True)
 
     def __str__(self):
         return f"Photo {self.id} in {self.album.title}"

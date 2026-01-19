@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load cloudinary %}
-
 {% block extra_css %}
 <link href="{% static 'css/pages/auth.css' %}" rel="stylesheet">
 <link href="{% static 'css/pages/profile.css' %}" rel="stylesheet">
@@ -13,7 +11,7 @@
     <div class="auth-card profile-card">
         <div class="profile-header">
             {% if user.profile.avatar %}
-                {% cloudinary user.profile.avatar format="jpg" width=300 height=300 crop="fill" class="profile-avatar-large" %}
+                <img src="{{ user.profile.avatar.url }}" class="profile-avatar-large" width="300" height="300" alt="{{ user.username }}" loading="lazy" style="object-fit: cover;">
             {% else %}
                 <div class="profile-avatar-placeholder">
                     <i class="fas fa-user"></i>

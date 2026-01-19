@@ -102,3 +102,124 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(err => console.error('Ошибка копирования:', err));
     }
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('sharePhotoModal');
+    if (!modal) return;
+
+    const input = document.getElementById('photoShareLink');
+    const loading = document.getElementById('shareLoading');
+    const content = document.getElementById('shareContent');
+    const closeBtn = modal.querySelector('.close-modal');
+    const copyBtn = modal.querySelector('#copyLinkBtn');
+    const disableBtn = modal.querySelector('#disableLinkBtn');
+    let currentPhotoId = null;
+
+    // Open Modal Triggers
+    document.querySelectorAll('.btn-share-photo').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const photoId = this.dataset.photoId;
+            openShareModal(photoId);
+        });
+    });
+
+    // Close Modal Trigger
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeShareModal);
+    }
+    
+    // Close on outside click
+    window.addEventListener('click', function(event) {
+        if (event.target == modal) {
+            closeShareModal();
+        }
+    });
+
+    // Copy Link Trigger
+    if (copyBtn) {
+        copyBtn.addEventListener('click', copyPhotoLink);
+    }
+
+    // Disable Link Trigger
+    if (disableBtn) {
+        disableBtn.addEventListener('click', disablePhotoLink);
+    }
+
+    function openShareModal(photoId) {
+        currentPhotoId = photoId;
+        modal.style.display = 'block';
+        loading.classList.remove('hidden');
+        content.classList.add('hidden');
+        loading.style.display = 'block';
+        content.style.display = 'none';
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch(`/dashboard/photo/${photoId}/share/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'action=generate' // Request to generate/get link
+        })
+        .then(response => response.json())
+        .then(data => {
+            loading.style.display = 'none';
+            loading.classList.add('hidden');
+            
+            if(data.status === 'ok') {
+                content.classList.remove('hidden');
+                content.style.display = 'block';
+                input.value = data.link;
+            } else {
+                alert("Error: " + data.message);
+                closeShareModal();
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            loading.innerText = "Ошибка загрузки";
+        });
+    }
+
+    function closeShareModal() {
+        modal.style.display = 'none';
+        currentPhotoId = null;
+    }
+
+    function copyPhotoLink() {
+        input.select();
+        navigator.clipboard.writeText(input.value)
+             .then(() => alert("Ссылка скопирована!"))
+             .catch(err => console.error(err));
+    }
+
+    function disablePhotoLink() {
+        if(!currentPhotoId) return;
+        
+        if(!confirm("Вы уверены? Ссылка перестанет работать.")) return;
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch(`/dashboard/photo/${currentPhotoId}/share/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'action=disable'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.status === 'ok') {
+                alert("Ссылка отключена.");
+                closeShareModal();
+            } else {
+                alert("Error: " + data.message);
+            }
+        })
+        .catch(err => console.error(err));
+    }
+});
