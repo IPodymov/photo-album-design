@@ -65,6 +65,17 @@ class PhotoSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ("album",)
 
+    def validate_image(self, value):
+        """Проверка загружаемого изображения (Section 3.1)."""
+        limit_mb = 10
+        if value.size > limit_mb * 1024 * 1024:
+            raise serializers.ValidationError(f"Размер файла не может превышать {limit_mb} MB.")
+
+        if not value.name.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
+            raise serializers.ValidationError("Разрешены только форматы JPEG, PNG, WEBP.")
+
+        return value
+
 
 class BugReportSerializer(serializers.ModelSerializer):
     class Meta:
@@ -90,3 +101,19 @@ class AlbumSerializer(serializers.ModelSerializer):
         model = Album
         fields = ("id", "title", "description", "created_at", "photos", "collages")
         read_only_fields = ("user",)
+
+    def validate_title(self, value):
+        """Уникальное название альбома для пользователя (Section 3.2)."""
+        user = self.context["request"].user
+        if Album.objects.filter(user=user, title=value).exists():
+            raise serializers.ValidationError("У вас уже есть альбом с таким названием.")
+        return value
+
+    def validate(self, attrs):
+        """Проверка макс. количества альбомов (Section 3.2)."""
+        user = self.context["request"].user
+        # Checking if creating new instance
+        if not self.instance:
+            if Album.objects.filter(user=user).count() >= 20:
+                raise serializers.ValidationError("Вы достигли лимита в 20 альбомов.")
+        return attrs

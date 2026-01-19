@@ -4,6 +4,7 @@
 
 - **Backend Framework**: Django 6.0.1
 - **API Framework**: Django Rest Framework (DRF) 3.16.1
+- **Filtering**: Django Filter (Advanced query parameters)
 - **Database**: SQLite (Default)
 - **Image Processing**: Pillow (for collage generation)
 - **Cloud Storage**: Cloudinary (for User Profiles), Local FileSystem (for Albums/Photos)

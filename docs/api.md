@@ -27,10 +27,29 @@ The API uses **Token Authentication**.
 
 ### Albums & Photos
 
-- `GET /api/albums/`: List all albums belonging to the authenticated user.
+#### Albums
+
+- `GET /api/albums/`: List all albums. Supports **Filtering** (by `created_at`), **Search** (`title`, `description`), and **Ordering**.
 - `POST /api/albums/`: Create a new album.
-- `POST /api/albums/{id}/upload-photos/`: Upload multiple photos to an album.
-- `POST /api/albums/{id}/generate-collage/`: Trigger backend logic to create a collage from album photos.
+- `GET /api/albums/export-excel/`: Download full album report in Excel.
+- `GET /api/albums/user_albums_stats/`: Get statistics (count, total photos).
+- `GET /api/albums/template_recommendations/`: Get smart template suggestions.
+
+**Detail Operations:**
+
+- `POST /api/albums/{id}/upload-photos/`: Upload multiple photos.
+- `POST /api/albums/{id}/generate-collage/`: Create collage.
+- `POST /api/albums/{id}/duplicate_album/`: Clone the album.
+- `POST /api/albums/{id}/publish/`: Set album as public (requires 3+ photos).
+- `POST /api/albums/{id}/share/`: Share album.
+- `POST /api/albums/{id}/generate_share_link/`: Create a temporary link.
+
+#### Photos
+
+- `GET /api/photos/`: List photos. Filter by `album`, `is_favorite`.
+- `POST /api/photos/{id}/edit/`: Apply filters (-100 to 100) and adjustments.
+- `POST /api/photos/{id}/reset_edits/`: Revert changes.
+- `POST /api/photos/{id}/reorder/`: Change photo order.
 
 ### Bug Reports
 

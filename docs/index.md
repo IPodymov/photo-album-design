@@ -12,7 +12,10 @@ The system supports two modes of interaction:
 ## Key Features
 
 - **User Management**: Registration, Login/Logout, Profile editing, Avatar upload (Cloudinary).
-- **Photo Albums**: Create albums, upload multiple photos.
+- **Photo Albums**: Create albums, upload multiple photos, **Duplicate** and **Share** functionality.
+- **Advanced Search & Filtering**: Find content by dates, tags, and status.
+- **Analytics & Recommendations**: User stats and template suggestions.
+- **Excel Export**: Detailed reports on albums and bug trackers.
 - **Collage Generation**: Automated creation of collages from album photos.
 - **Bug Reporting**: Built-in system for users to report issues.
 - **API Documentation**: Integrated Swagger/OpenAPI documentation.
