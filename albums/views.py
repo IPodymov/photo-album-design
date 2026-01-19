@@ -646,6 +646,12 @@ def generate_collage_view(request: HttpRequest, pk: uuid.UUID) -> HttpResponse:
     if not collage_file:
         return HttpResponse("Error creating collage", status=500)
 
-    response = HttpResponse(collage_file.read(), content_type="image/png")
-    response["Content-Disposition"] = f'attachment; filename="collage_{album.id}.png"'
+    # Save collage to DB
+    filename = f"collage_{album.id}_{uuid.uuid4().hex[:8]}.png"
+    collage = Collage(album=album)
+    collage.image.save(filename, collage_file, save=True)
+
+    # Re-open the saved file to return in response
+    response = HttpResponse(collage.image.open(), content_type="image/png")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
     return response
