@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from cloudinary.models import CloudinaryField
 import uuid
+from typing import Union, Any
 
 
 class UserProfile(models.Model):
@@ -15,17 +16,22 @@ class UserProfile(models.Model):
         return f"{self.user.username}'s profile"
 
 
-def get_album_media_path(user_id, album_id, subfolder, filename):
+def get_album_media_path(
+    user_id: Any, 
+    album_id: Any, 
+    subfolder: str, 
+    filename: str
+) -> str:
     """Общая функция для формирования путей медиафайлов альбома."""
     return f"user_{user_id}/album_{album_id}/{subfolder}/{filename}"
 
 
-def photo_directory_path(instance, filename):
+def photo_directory_path(instance: Any, filename: str) -> str:
     """Путь для загрузки фотографий."""
     return get_album_media_path(instance.album.user.id, instance.album.id, "photos", filename)
 
 
-def collage_directory_path(instance, filename):
+def collage_directory_path(instance: Any, filename: str) -> str:
     """Путь для загрузки коллажей."""
     return get_album_media_path(instance.album.user.id, instance.album.id, "collages", filename)
 

@@ -1,8 +1,10 @@
 from PIL import Image
 import math
 from io import BytesIO
+from typing import List, Tuple, Optional, Any, Callable, Union
 from django.core.files.base import ContentFile
 from django.http import HttpResponse
+from django.db.models.query import QuerySet
 from datetime import datetime
 import openpyxl
 
@@ -12,21 +14,25 @@ COLLAGE_BG_COLOR = "white"
 COLLAGE_FORMAT = "JPEG"
 
 
-def load_and_resize_image(image_path, size):
+def load_and_resize_image(image_file: Any, size: Tuple[int, int]) -> Image.Image:
     """Загружает и изменяет размер изображения."""
-    img = Image.open(image_path)
+    img = Image.open(image_file)
     img.thumbnail(size)
     return img.resize(size)
 
 
-def calculate_grid(count):
+def calculate_grid(count: int) -> Tuple[int, int]:
     """Вычисляет размеры сетки для коллажа."""
     cols = math.ceil(math.sqrt(count))
     rows = math.ceil(count / cols)
     return cols, rows
 
 
-def create_collage_image(photos, cell_size=COLLAGE_CELL_SIZE, output_format=COLLAGE_FORMAT):
+def create_collage_image(
+    photos: QuerySet, 
+    cell_size: int = COLLAGE_CELL_SIZE, 
+    output_format: str = COLLAGE_FORMAT
+) -> Optional[ContentFile]:
     """Создаёт коллаж из списка фотографий."""
     if not photos:
         return None
@@ -35,8 +41,10 @@ def create_collage_image(photos, cell_size=COLLAGE_CELL_SIZE, output_format=COLL
     pil_images = []
     for photo in photos:
         try:
-            img = load_and_resize_image(photo.image.path, (cell_size, cell_size))
-            pil_images.append(img)
+            # Используем photo.image.open() вместо path, чтобы работать с S3/Cloudinary
+            with photo.image.open() as img_file:
+                img = load_and_resize_image(img_file, (cell_size, cell_size))
+                pil_images.append(img)
         except Exception as e:
             print(f"Error opening image {photo.id}: {e}")
             continue
@@ -66,7 +74,13 @@ def create_collage_image(photos, cell_size=COLLAGE_CELL_SIZE, output_format=COLL
     return ContentFile(buffer.getvalue(), name=f"collage.{ext}")
 
 
-def export_queryset_to_excel(queryset, headers, row_extractor, sheet_title, filename_prefix):
+def export_queryset_to_excel(
+    queryset: QuerySet,
+    headers: List[str],
+    row_extractor: Callable[[Any], List[Any]],
+    sheet_title: str,
+    filename_prefix: str,
+) -> HttpResponse:
     """
     Универсальная функция экспорта QuerySet в Excel.
 
@@ -82,7 +96,10 @@ def export_queryset_to_excel(queryset, headers, row_extractor, sheet_title, file
     """
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = sheet_title
+    if ws is None:
+        ws = wb.create_sheet(title=sheet_title)
+    else:
+        ws.title = sheet_title
 
     ws.append(headers)
 

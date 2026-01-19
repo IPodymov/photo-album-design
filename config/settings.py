@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-oo+st^m%skf&0585pscg7u$h4w=wn@y(3cm1s^@*^%3)c$ue8-'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['photo-album-design-production.up.railway.app', '127.0.0.1', 'localhost']
 
@@ -163,9 +163,14 @@ STATICFILES_DIRS = [
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Use Cloudinary in production (when DEBUG is False) or if explicitly requested
+USE_CLOUDINARY = os.getenv('USE_CLOUDINARY', 'False') == 'True' or not DEBUG
+
 STORAGES = {
     "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage" 
+                   if USE_CLOUDINARY 
+                   else "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
