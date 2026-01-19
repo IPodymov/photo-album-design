@@ -32,6 +32,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['photo-album-design-production.up.railway.app', '127.0.0.1', 'localhost']
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://photo-album-design-production.up.railway.app',
+]
+
+
 
 
 # Application definition
