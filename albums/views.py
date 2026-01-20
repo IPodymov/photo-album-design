@@ -154,8 +154,10 @@ class AlbumViewSet(UserOwnedMixin, viewsets.ModelViewSet):
         if query:
             # Complex logic:
             # (Title contains query OR Description contains query) AND NOT (Title="Untitled")
-            text_condition = (Q(title__icontains=query) | Q(description__icontains=query)) & ~Q(title__iexact="Untitled")
-            
+            text_condition = (Q(title__icontains=query) | Q(description__icontains=query)) & ~Q(
+                title__iexact="Untitled"
+            )
+
             # Combine: Base AND Text
             final_query = base_condition & text_condition
         else:
@@ -163,8 +165,8 @@ class AlbumViewSet(UserOwnedMixin, viewsets.ModelViewSet):
 
         # Additional complexity with NOT
         if mode == "private_only":
-             # AND NOT is_public
-             final_query = final_query & ~Q(is_public=True)
+            # AND NOT is_public
+            final_query = final_query & ~Q(is_public=True)
 
         albums = Album.objects.filter(final_query).distinct()
         serializer = self.get_serializer(albums, many=True)
@@ -199,9 +201,25 @@ class AlbumViewSet(UserOwnedMixin, viewsets.ModelViewSet):
     @action(methods=["POST"], detail=True)
     def duplicate_album(self, request, pk=None):
         """Создать копию альбома (Section 9.3)."""
+        # 1. Limit check
+        if Album.objects.filter(user=request.user).count() >= 20:
+            return Response(
+                {"error": "Вы достигли лимита в 20 альбомов."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         original = self.get_object()
+
+        # 2. Unique Title Logic
+        base_title = f"Copy of {original.title}"
+        title = base_title
+        counter = 1
+        while Album.objects.filter(user=request.user, title=title).exists():
+            title = f"{base_title} ({counter})"
+            counter += 1
+
         new_album = Album.objects.create(
-            user=request.user, title=f"Copy of {original.title}", description=original.description
+            user=request.user, title=title, description=original.description
         )
         # Copy photos
         for photo in original.photos.all():
@@ -395,7 +413,7 @@ class PhotoViewSet(UserOwnedMixin, viewsets.ModelViewSet):
 
     @action(methods=["POST"], detail=True)
     def edit(self, request, pk=None):
-        """Редактировать фото (Section 2). Valudation 3.3"""
+        """Редактировать фото (Section 2). Validation 3.3"""
         # Mocking edit logic
         # Filters: -100 to 100 validation
         filters_data = request.data.get("filters", {})
@@ -416,9 +434,12 @@ class PhotoViewSet(UserOwnedMixin, viewsets.ModelViewSet):
         """Сбросить редактирование (Section 2)."""
         return Response({"status": "Edits reset"})
 
-    def perform_create(self, serializer):
-        # Фото создаются через upload_photos в AlbumViewSet
-        serializer.save()
+    def create(self, request, *args, **kwargs):
+        """Запрещаем прямое создание фото (через POST /photos/)."""
+        return Response(
+            {"detail": "Используйте /api/albums/{id}/upload-photos/ для загрузки фотографий."},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED,
+        )
 
 
 class BugReportViewSet(UserOwnedMixin, viewsets.ModelViewSet):
@@ -492,6 +513,12 @@ def create_album_view(request):
         title = request.POST.get("title")
         description = request.POST.get("description")
         photos = request.FILES.getlist("photos")
+
+        # Check for file size
+        max_size = 10 * 1024 * 1024  # 10 MB
+        for photo in photos:
+            if photo.size > max_size:
+                return render(request, "pages/upload_error.html")
 
         album = Album.objects.create(user=request.user, title=title, description=description)
 
@@ -579,6 +606,12 @@ def add_photos_view(request, pk):
     if request.method == "POST":
         photos = request.FILES.getlist("photos")
         if photos:
+            # Check for file size
+            max_size = 10 * 1024 * 1024  # 10 MB
+            for photo in photos:
+                if photo.size > max_size:
+                    return render(request, "pages/upload_error.html")
+
             for photo in photos:
                 Photo.objects.create(album=album, image=photo)
             messages.success(request, f"Added {len(photos)} photos.")
