@@ -29,7 +29,19 @@ The API uses **Token Authentication**.
 
 #### Albums
 
-- `GET /api/albums/`: List all albums. Supports **Filtering** (by `created_at`), **Search** (`title`, `description`), and **Ordering**.
+- `GET /api/albums/`: List available albums.
+  **Filtering Features:**
+  1. **User Owned**: Automatically filters albums belonging to the authenticated user (unless public).
+  2. **Field Filters**: `?is_public=true`, `?title=vacation`, `?created_at__year=2023`.
+  3. **Search**: `?search=summer` (searches title and description).
+  4. **Ordering**: `?ordering=-created_at`.
+
+- `GET /api/albums/advanced_search/`: **Advanced Search** (Requirement 1).
+  - Uses complex Q-object logic (AND, OR, NOT).
+  - Params:
+    - `query`: Text to search in title OR description.
+    - `mode`: `private_only` (excludes public), `all` (default).
+
 - `POST /api/albums/`: Create a new album.
 - `GET /api/albums/export-excel/`: Download full album report in Excel.
 - `GET /api/albums/user_albums_stats/`: Get statistics (count, total photos).

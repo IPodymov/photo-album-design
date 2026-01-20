@@ -4,9 +4,11 @@
 
 {% block extra_css %}
 <link href="{% static 'css/pages/album_detail.css' %}" rel="stylesheet" />
+<link href="{% static 'css/components/loader.css' %}" rel="stylesheet" />
 {% endblock %}
 
 {% block content %}
+{% include 'components/loader.html' %}
 <div class="container album-container">
   <div class="album-content">
     <div class="album-header">
@@ -56,9 +58,10 @@
           enctype="multipart/form-data"
           class="add-photos-form">
           {% csrf_token %}
-          <label for="file-upload" class="custom-file-upload">
+          <label for="file-upload" class="custom-file-upload" id="upload-label">
             <i class="fas fa-cloud-upload-alt"></i> Добавить фото
           </label>
+          <p class="file-limit-hint" style="font-size: 0.8rem; color: #6c757d; margin-top: 5px;">Максимальный размер фото: 10 МБ</p>
           <input
             id="file-upload"
             name="photos"

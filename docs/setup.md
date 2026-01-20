@@ -6,7 +6,7 @@
 - **Pip**: Python package manager
 - **Cloudinary Account**: Required for user avatar storage
 
-## Installation Steps
+## Installation Steps (Local)
 
 1. **Clone the repository**
 
@@ -32,10 +32,11 @@
 
 4. **Environment Configuration**
    Create a `.env` file in the root directory. You can copy `.env.example`:
+
    ```bash
    cp .env.example .env
    ```
-   
+
    Required variables in `.env`:
 
    ```env
@@ -43,10 +44,10 @@
    SECRET_KEY=your_secret_key_here
    DEBUG=True  # Set to False in production
    ALLOWED_HOSTS=your_host,127.0.0.1
-   
+
    # Database (Optional - defaults to SQLite if not set)
    # DATABASE_URL=postgresql://user:password@localhost:5432/dbname
-   
+
    # Cloudinary (Required for Media Storage)
    CLOUDINARY_CLOUD_NAME=your_cloud_name
    CLOUDINARY_API_KEY=your_api_key
@@ -73,6 +74,34 @@
    ```
    The application will be available at `http://127.0.0.1:8000/`.
 
+## Installation (Docker)
+
+To run the application in a containerized environment (recommended for consistency):
+
+1. **Prerequisites**: Ensure Docker and Docker Compose are installed.
+2. **Environment**: Create `.env` file as described above.
+3. **Build and Run**:
+   ```bash
+   docker-compose up --build
+   ```
+4. **Access**: Open `http://0.0.0.0:8000/`.
+
+## Code Quality & Linting
+
+This project uses **Pylint** to ensure code quality style guidlines are met.
+
+**Running the Linter:**
+
+```bash
+# Basic run
+pylint albums config
+
+# Run ignoring specific stylistic warnings (using config)
+pylint albums config --rcfile=.pylintrc
+```
+
+The goal is to maintain a score above **9.0**.
+
 ## Running Tests
 
 To run the full test suite (which includes model, view, and integration tests):
@@ -85,6 +114,6 @@ The testing environment is configured to use a temporary file storage system ins
 
 ## Static Files
 
-The project uses **WhiteNoise** for serving static files. 
-- Run `python manage.py collectstatic` to gather static files into the `staticfiles` directory before deployment.
+The project uses **WhiteNoise** for serving static files.
 
+- Run `python manage.py collectstatic` to gather static files into the `staticfiles` directory before deployment.

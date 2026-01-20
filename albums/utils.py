@@ -1,12 +1,13 @@
-from PIL import Image
 import math
 from io import BytesIO
 from typing import List, Tuple, Optional, Any, Callable, Union
+from datetime import datetime
+import openpyxl
+
+from PIL import Image
 from django.core.files.base import ContentFile
 from django.http import HttpResponse
 from django.db.models.query import QuerySet
-from datetime import datetime
-import openpyxl
 
 # Константы для коллажей
 COLLAGE_CELL_SIZE = 300
@@ -29,9 +30,7 @@ def calculate_grid(count: int) -> Tuple[int, int]:
 
 
 def create_collage_image(
-    photos: QuerySet, 
-    cell_size: int = COLLAGE_CELL_SIZE, 
-    output_format: str = COLLAGE_FORMAT
+    photos: QuerySet, cell_size: int = COLLAGE_CELL_SIZE, output_format: str = COLLAGE_FORMAT
 ) -> Optional[ContentFile]:
     """Создаёт коллаж из списка фотографий."""
     if not photos:
@@ -45,7 +44,7 @@ def create_collage_image(
             with photo.image.open() as img_file:
                 img = load_and_resize_image(img_file, (cell_size, cell_size))
                 pil_images.append(img)
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             print(f"Error opening image {photo.id}: {e}")
             continue
 
@@ -59,8 +58,10 @@ def create_collage_image(
 
     # Создание коллажа
     mode = "RGB" if output_format == "JPEG" else "RGBA"
-    bg_color = COLLAGE_BG_COLOR if output_format == "JPEG" else (255, 255, 255, 0) # Transparent for PNG or White? User didn't specify, but white is safer as transparency can be weird for collages. Let's stick to user request "png format". Usually PNG implies transparency support, but for photo album collage white bg is standard. I'll keep white bg but format PNG.
-    
+    bg_color = (
+        COLLAGE_BG_COLOR if output_format == "JPEG" else (255, 255, 255, 0)
+    )  # Transparent for PNG or White? User didn't specify, but white is safer as transparency can be weird for collages. Let's stick to user request "png format". Usually PNG implies transparency support, but for photo album collage white bg is standard. I'll keep white bg but format PNG.
+
     collage = Image.new(mode, (collage_width, collage_height), COLLAGE_BG_COLOR)
 
     for i, img in enumerate(pil_images):

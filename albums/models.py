@@ -1,9 +1,11 @@
+import os
+import uuid
+from typing import Any
+
 from django.db import models
 from django.contrib.auth.models import User
 from cloudinary.models import CloudinaryField
-import uuid
-import os
-from typing import Union, Any
+from simple_history.models import HistoricalRecords
 
 
 class UserProfile(models.Model):
@@ -46,6 +48,7 @@ class Album(models.Model):
     is_public = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    history = HistoricalRecords()
 
     def __str__(self):
         return f"{self.title} ({self.user.username})"
@@ -57,6 +60,7 @@ class Photo(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     is_favorite = models.BooleanField(default=False)  # For 'best shots' feature
     public_token = models.UUIDField(editable=False, null=True, blank=True, unique=True)
+    history = HistoricalRecords()
 
     def __str__(self):
         return f"Photo {self.id} in {self.album.title}"

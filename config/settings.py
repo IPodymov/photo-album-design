@@ -10,10 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import sys
+import os
 from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
-import os
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
@@ -55,6 +56,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'drf_spectacular',
     'django_filters',
+    'simple_history',
+    'import_export',
     'cloudinary_storage',
     'cloudinary',
     'albums',
@@ -84,6 +87,8 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
     ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
@@ -169,7 +174,6 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-import sys
 
 # Use Cloudinary in production, or if explicitly requested, or if on Railway
 IS_RAILWAY = os.getenv('RAILWAY_ENVIRONMENT_NAME') is not None

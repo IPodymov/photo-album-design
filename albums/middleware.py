@@ -48,8 +48,6 @@ class AutomaticBugReportMiddleware(MiddlewareMixin):
             BugReport.objects.create(
                 user=user_instance, title=error_title, description=description, status="open"
             )
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             # If logging fails, we print to stderr so we don't define the error implicitly
             print(f"Failed to create automatic bug report: {e}", file=sys.stderr)
-
-        return None  # Return None means Django will continue processing the exception

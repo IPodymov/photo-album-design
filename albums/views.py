@@ -1,8 +1,8 @@
-from rest_framework import viewsets, permissions, status, generics, filters
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from rest_framework.views import APIView
-from rest_framework.authtoken.models import Token
+import uuid
+import json
+from typing import Any
+
+from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login
@@ -11,10 +11,15 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.utils import timezone
 from django.views.generic import ListView
-from django.http import JsonResponse, HttpResponseForbidden, Http404, HttpResponse
+from django.http import JsonResponse, HttpResponseForbidden, HttpResponse, HttpRequest
 from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
-from typing import Any
+
+from rest_framework import viewsets, permissions, status, generics, filters
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from rest_framework.views import APIView
+from rest_framework.authtoken.models import Token
 
 
 from .models import Album, Photo, Collage, BugReport, UserProfile
@@ -29,7 +34,6 @@ from .serializers import (
     BugReportSerializer,
 )
 from .utils import create_collage_image, export_queryset_to_excel
-import uuid
 
 
 class UserOwnedMixin:
@@ -124,11 +128,47 @@ class AlbumViewSet(UserOwnedMixin, viewsets.ModelViewSet):
     serializer_class = AlbumSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    # filterset_fields = ['is_public', 'layout_template'] # Some fields missing in model
-    # We can filter by date
-    filterset_fields = {"created_at": ["gte", "lte", "exact", "year"]}
+    # 5 variants of filtering
+    filterset_fields = {
+        "is_public": ["exact"],
+        "title": ["icontains"],
+        "created_at": ["gte", "lte", "year"],
+    }
     search_fields = ["title", "description"]
     ordering_fields = ["created_at", "title", "updated_at"]
+
+    @action(detail=False, methods=["get"])
+    def advanced_search(self, request):
+        """
+        Complex Search Action (Requirement 1):
+        Uses Q objects with OR (|), AND (&), and NOT (~).
+        Query params: 'query' (text), 'mode' (public/private).
+        """
+        query = request.query_params.get("query", "")
+        mode = request.query_params.get("mode", "all")
+
+        # Base: User's albums OR Public albums
+        # (user=me) | (is_public=True)
+        base_condition = Q(user=request.user) | Q(is_public=True)
+
+        if query:
+            # Complex logic:
+            # (Title contains query OR Description contains query) AND NOT (Title="Untitled")
+            text_condition = (Q(title__icontains=query) | Q(description__icontains=query)) & ~Q(title__iexact="Untitled")
+            
+            # Combine: Base AND Text
+            final_query = base_condition & text_condition
+        else:
+            final_query = base_condition
+
+        # Additional complexity with NOT
+        if mode == "private_only":
+             # AND NOT is_public
+             final_query = final_query & ~Q(is_public=True)
+
+        albums = Album.objects.filter(final_query).distinct()
+        serializer = self.get_serializer(albums, many=True)
+        return Response(serializer.data)
 
     @action(detail=False, methods=["get"])
     def user_albums_stats(self, request):
@@ -498,10 +538,6 @@ def profile_view(request):
     return render(request, "dashboard/profile_view.html", {"user": request.user})
 
 
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponseForbidden, HttpResponse, HttpRequest
-
-
 def album_detail_view(request: HttpRequest, pk: uuid.UUID) -> HttpResponse:
     album = get_object_or_404(Album, pk=pk)
 
@@ -677,12 +713,10 @@ def share_photo_view(request, pk):
 
         # If calling via fetch with JSON body
         if not action and request.body:
-            import json
-
             try:
                 body = json.loads(request.body)
                 action = body.get("action")
-            except:
+            except (json.JSONDecodeError, ValueError):
                 pass
 
         if action == "generate":

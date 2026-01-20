@@ -17,6 +17,19 @@
 - **Database**: SQLite (Default)
 - **Documentation**: Swagger/OpenAPI
 
+## ✅ Code Quality
+
+The project enforces high code quality standards using **Pylint**.
+
+To check the code quality score:
+
+```bash
+# Run pylint with project-specific configuration
+pylint albums config --rcfile=.pylintrc
+```
+
+Current target score: **> 9.0/10**.
+
 ## 📚 Documentation
 
 Full documentation is available in the [`docs/`](docs/) directory:
@@ -27,6 +40,19 @@ Full documentation is available in the [`docs/`](docs/) directory:
 - [User Guide](docs/user_guide.md)
 
 ## ⚡ Quick Start
+
+### Option A: Docker (Recommended)
+
+1. **Configure Environment**:
+   Create `.env` file (see example below) with your Cloudinary credentials.
+
+2. **Run with Docker Compose**:
+   ```bash
+   docker-compose up --build
+   ```
+   The app will be available at `http://0.0.0.0:8000/`.
+
+### Option B: Local Setup
 
 1. **Clone & Setup**:
 

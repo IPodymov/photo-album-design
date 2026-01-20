@@ -24,8 +24,8 @@
 
 3. **Album**
    - **ForeignKey** to `User` (Owner).
-   - **Fields**: `title`, `description`, `created_at`, `updated_at`.
-   - Represents a collection of photos.
+   - **Fields**: `title`, `description`, `details` (JSON), `is_public` (Boolean), `editors` (ManyToMany User), `created_at`, `updated_at`.
+   - Represents a collection of photos. Includes privacy controls (`is_public`) and shared editing (`editors`).
 
 4. **Photo**
    - **ForeignKey** to `Album`.

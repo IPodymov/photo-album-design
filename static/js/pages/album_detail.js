@@ -6,9 +6,65 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     const fileInput = document.getElementById('file-upload');
+    const uploadLabel = document.getElementById('upload-label');
+    const fullScreenLoader = document.getElementById('full-screen-loader');
+
     if (fileInput) {
         fileInput.addEventListener('change', function() {
-            this.form.submit();
+            if (this.files && this.files.length > 0) {
+                 // Size validation
+                 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+                 let hasOversizedFile = false;
+                 
+                 Array.from(this.files).forEach(file => {
+                     if (file.size > MAX_SIZE) {
+                         hasOversizedFile = true;
+                     }
+                 });
+ 
+                 if (hasOversizedFile) {
+                     alert('Ошибка: Один или несколько файлов превышают лимит в 10 МБ. Пожалуйста, выберите файлы меньшего размера.');
+                     this.value = ''; // Reset input
+                     return;
+                 }
+
+                // UI Feedback: Full Screen Loader
+                if (fullScreenLoader) {
+                    fullScreenLoader.style.display = 'flex';
+                }
+                
+                // Hide button just in case, though overlay covers it
+                if (uploadLabel) uploadLabel.style.display = 'none';
+
+                // UI Feedback: Grid Previews (still keep this as background context)
+                const photosGrid = document.querySelector('.photos-grid');
+                if (photosGrid) {
+                    const emptyMsg = document.querySelector('.empty-album');
+                    if (emptyMsg) emptyMsg.style.display = 'none';
+
+                    Array.from(this.files).forEach(file => {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const card = document.createElement('div');
+                            card.className = 'photo-card uploading';
+                            card.innerHTML = `
+                                <img src="${e.target.result}" class="photo-img" style="object-fit: cover;">
+                                <div class="upload-overlay">
+                                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                                </div>
+                            `;
+                            // Insert at the beginning of the grid
+                           photosGrid.insertBefore(card, photosGrid.firstChild);
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                }
+
+                // Delay submit slightly to allow UI updates to render
+                setTimeout(() => {
+                    this.form.submit();
+                }, 500); // Increased delay a bit to let the loader animation start smoothly
+            }
         });
     }
 

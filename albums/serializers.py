@@ -20,6 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
+        """Create user instance."""
         validated_data.pop("password_confirm")
         user = User.objects.create_user(
             username=validated_data["username"],
@@ -27,6 +28,10 @@ class UserSerializer(serializers.ModelSerializer):
             password=validated_data["password"],
         )
         return user
+
+    def update(self, instance, validated_data):
+        """Stub to satisfy abstract method."""
+        return super().update(instance, validated_data)
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -44,6 +49,14 @@ class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True, validators=[validate_password])
     new_password_confirm = serializers.CharField(required=True)
+
+    def create(self, validated_data):
+        """Stub to satisfy abstract method."""
+        return super().create(validated_data)  # pylint: disable=no-member
+
+    def update(self, instance, validated_data):
+        """Stub to satisfy abstract method."""
+        return super().update(instance, validated_data)  # pylint: disable=no-member
 
     def validate(self, attrs):
         if attrs["new_password"] != attrs["new_password_confirm"]:
@@ -66,7 +79,10 @@ class PhotoSerializer(serializers.ModelSerializer):
         read_only_fields = ("album",)
 
     def validate_image(self, value):
-        """Проверка загружаемого изображения (Section 3.1)."""
+        """
+        Проверка загружаемого изображения (Section 3.1).
+        Business Logic Validation 3: Size and Format checks.
+        """
         limit_mb = 10
         if value.size > limit_mb * 1024 * 1024:
             raise serializers.ValidationError(f"Размер файла не может превышать {limit_mb} MB.")
@@ -84,7 +100,7 @@ class BugReportSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "user",
             "created_at",
-        )  # Status should be writable for updates (e.g. by admin)
+        )
 
 
 class CollageSerializer(serializers.ModelSerializer):
@@ -99,21 +115,37 @@ class AlbumSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Album
-        fields = ("id", "title", "description", "created_at", "photos", "collages")
-        read_only_fields = ("user",)
+        fields = "__all__"
+        read_only_fields = ("user", "created_at", "updated_at")
 
     def validate_title(self, value):
-        """Уникальное название альбома для пользователя (Section 3.2)."""
+        """Business Logic Validation: Ban words + Unique title."""
+        forbidden_words = ["admin", "root", "superuser", "banned"]
+        if any(word in value.lower() for word in forbidden_words):
+            raise serializers.ValidationError("Название альбома содержит запрещенные слова.")
+
+        # Unique check
         user = self.context["request"].user
-        if Album.objects.filter(user=user, title=value).exists():
+        if Album.objects.filter(user=user, title=value).exists() and not self.instance:
             raise serializers.ValidationError("У вас уже есть альбом с таким названием.")
+
         return value
 
-    def validate(self, attrs):
-        """Проверка макс. количества альбомов (Section 3.2)."""
+    def validate(self, data):
+        """Business Logic Validation: Description required for public albums + Limit check."""
+        # 1. Description check
+        is_public = data.get("is_public", False)
+        description = data.get("description", "")
+
+        if is_public and not description:
+            raise serializers.ValidationError(
+                {"description": "Публичные альбомы должны иметь описание."}
+            )
+
+        # 2. Limit check (moved from validate, usually good to have in validate or view)
         user = self.context["request"].user
-        # Checking if creating new instance
         if not self.instance:
             if Album.objects.filter(user=user).count() >= 20:
                 raise serializers.ValidationError("Вы достигли лимита в 20 альбомов.")
-        return attrs
+
+        return data
