@@ -18,7 +18,7 @@
       <a href="{% url 'dashboard' %}" class="nav-link nav-link-primary">Мои Альбомы</a>
       <a href="{% url 'profile' %}" class="nav-link nav-profile-link">
         {% if user.profile.avatar %}
-          <img src="{{ user.profile.avatar.url }}" class="nav-avatar" width="32" height="32" alt="{{ user.username }}" loading="lazy" style="object-fit: cover;">
+          <img src="{{ user.profile.avatar.url }}" class="nav-avatar" width="32" height="32" alt="{{ user.username }}" loading="lazy">
         {% else %}
         <i class="fas fa-user-circle nav-avatar-icon"></i>
         {% endif %}

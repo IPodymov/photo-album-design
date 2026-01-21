@@ -652,3 +652,9 @@
 .upload-overlay i {
     color: #3498db;
 }
+
+.file-limit-hint {
+    font-size: 0.8rem;
+    color: var(--text-light, #6c757d);
+    margin-top: 5px;
+}

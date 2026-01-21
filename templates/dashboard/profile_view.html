@@ -1,17 +1,12 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block extra_css %}
-<link href="{% static 'css/pages/auth.css' %}" rel="stylesheet">
-<link href="{% static 'css/pages/profile.css' %}" rel="stylesheet">
-<link href="{% static 'css/pages/profile_view.css' %}" rel="stylesheet">
-{% endblock %}
 
 {% block content %}
 <div class="auth-page">
     <div class="auth-card profile-card">
         <div class="profile-header">
             {% if user.profile.avatar %}
-                <img src="{{ user.profile.avatar.url }}" class="profile-avatar-large" width="300" height="300" alt="{{ user.username }}" loading="lazy" style="object-fit: cover;">
+                <img src="{{ user.profile.avatar.url }}" class="profile-avatar-large" width="300" height="300" alt="{{ user.username }}" loading="lazy">
             {% else %}
                 <div class="profile-avatar-placeholder">
                     <i class="fas fa-user"></i>

@@ -23,7 +23,7 @@ from django.conf.urls.static import static
 from django.views.generic import TemplateView
 from rest_framework.authtoken.views import obtain_auth_token
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
-from .views import IndexView
+from .views import IndexView, health_check
 from albums.forms import StyledAuthenticationForm
 from albums.views import (
     UserRegistrationView,
@@ -47,6 +47,7 @@ from albums.views import (
 )
 
 urlpatterns = [
+    path('health/', health_check, name='health_check'),
     path('', IndexView.as_view(), name='home'),
     path('security-policy/', TemplateView.as_view(template_name='pages/security_policy.html'), name='security_policy'),
     path('dashboard/', DashboardView.as_view(), name='dashboard'),

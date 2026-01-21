@@ -2,11 +2,6 @@
 {% load static %}
 {% block title %}{{ album.title }}{% endblock %}
 
-{% block extra_css %}
-<link href="{% static 'css/pages/album_detail.css' %}" rel="stylesheet" />
-<link href="{% static 'css/components/loader.css' %}" rel="stylesheet" />
-{% endblock %}
-
 {% block content %}
 {% include 'components/loader.html' %}
 <div class="container album-container">
@@ -61,7 +56,7 @@
           <label for="file-upload" class="custom-file-upload" id="upload-label">
             <i class="fas fa-cloud-upload-alt"></i> Добавить фото
           </label>
-          <p class="file-limit-hint" style="font-size: 0.8rem; color: #6c757d; margin-top: 5px;">Максимальный размер фото: 10 МБ</p>
+          <p class="file-limit-hint">Максимальный размер фото: 10 МБ</p>
           <input
             id="file-upload"
             name="photos"

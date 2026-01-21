@@ -1,6 +1,6 @@
 import uuid
 import json
-from typing import Any
+from typing import Any, cast
 
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
@@ -222,7 +222,7 @@ class AlbumViewSet(UserOwnedMixin, viewsets.ModelViewSet):
             user=request.user, title=title, description=original.description
         )
         # Copy photos
-        for photo in original.photos.all():
+        for photo in original.photos.all():  # type: ignore
             Photo.objects.create(
                 album=new_album,
                 image=photo.image,  # Using same file reference
@@ -240,7 +240,7 @@ class AlbumViewSet(UserOwnedMixin, viewsets.ModelViewSet):
     def publish(self, request, pk=None):
         """Публикация альбома (Section 2, 3.5)."""
         album = self.get_object()
-        if album.photos.count() < 3:
+        if album.photos.count() < 3:  # type: ignore
             return Response(
                 {"error": "Альбом должен содержать минимум 3 фотографии."},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -279,7 +279,7 @@ class AlbumViewSet(UserOwnedMixin, viewsets.ModelViewSet):
 
         def dehydrate_completion_status(obj):
             # Section 7.2
-            photo_count = obj.photos.count()
+            photo_count = obj.photos.count()  # type: ignore
             if photo_count == 0:
                 return "Пустой"
             elif photo_count < 10:
@@ -319,7 +319,7 @@ class AlbumViewSet(UserOwnedMixin, viewsets.ModelViewSet):
         def extract_row(album):
             return [
                 album.title,
-                str(album.photos.count()),
+                str(album.photos.count()),  # type: ignore
                 album.created_at.strftime("%Y-%m-%d"),
                 "Standard",  # Mock template
                 "Draft",  # Mock status
@@ -364,7 +364,7 @@ class AlbumViewSet(UserOwnedMixin, viewsets.ModelViewSet):
         # We look for photos marked as favorite first
         # use_best = request.data.get("use_best_shots", False)  # Optional flag from frontend
 
-        photos = album.photos.all()
+        photos = album.photos.all()  # type: ignore
 
         # If user explicitly wants best shots, or just as a default logic if we decide:
         # Let's say if we have favorites, we use them. If not, we use all.
@@ -504,7 +504,36 @@ class DashboardView(ListView):
     context_object_name = "albums"
 
     def get_queryset(self):
-        return Album.objects.filter(user=self.request.user).order_by("-created_at")
+        queryset = Album.objects.filter(user=self.request.user)
+
+        # Search
+        query = self.request.GET.get("q")
+        if query:
+            queryset = queryset.filter(Q(title__icontains=query) | Q(description__icontains=query))
+
+        # Status Filter
+        status_filter = self.request.GET.get("status")
+        if status_filter == "public":
+            queryset = queryset.filter(is_public=True)
+        elif status_filter == "private":
+            queryset = queryset.filter(is_public=False)
+
+        # Sorting
+        ordering = self.request.GET.get("ordering", "-created_at")
+        allowed_ordering = ["created_at", "-created_at", "title", "-title"]
+        if ordering in allowed_ordering:
+            queryset = queryset.order_by(ordering)
+        else:
+            queryset = queryset.order_by("-created_at")
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["current_q"] = self.request.GET.get("q", "")
+        context["current_status"] = self.request.GET.get("status", "")
+        context["current_ordering"] = self.request.GET.get("ordering", "-created_at")
+        return context
 
 
 @login_required
@@ -571,7 +600,7 @@ def album_detail_view(request: HttpRequest, pk: uuid.UUID) -> HttpResponse:
     # Check permissions
     is_owner = request.user.is_authenticated and album.user == request.user
     is_editor = request.user.is_authenticated and (
-        is_owner or album.editors.filter(id=request.user.id).exists()
+        is_owner or album.editors.filter(id=request.user.id).exists()  # type: ignore
     )
 
     if not is_editor and not album.is_public:
@@ -580,7 +609,7 @@ def album_detail_view(request: HttpRequest, pk: uuid.UUID) -> HttpResponse:
             return redirect("login")
         return HttpResponseForbidden("You do not have permission to view this album.")
 
-    photos = album.photos.all()
+    photos = album.photos.all()  # type: ignore
 
     context = {
         "album": album,
@@ -598,7 +627,7 @@ def add_photos_view(request, pk):
 
     # Permission check: Owner or Editor
     is_owner = album.user == request.user
-    is_editor = album.editors.filter(id=request.user.id).exists()
+    is_editor = album.editors.filter(id=cast(User, request.user).id).exists()
 
     if not (is_owner or is_editor):
         return HttpResponseForbidden("You do not have permission to add photos to this album.")
@@ -635,7 +664,7 @@ def add_collaborator_view(request, pk):
             user = User.objects.get(username=username)
             if user == request.user:
                 messages.error(request, "You are already the owner.")
-            elif album.editors.filter(id=user.id).exists():
+            elif album.editors.filter(id=user.id).exists():  # type: ignore
                 messages.info(request, f"{user.username} is already an editor.")
             else:
                 album.editors.add(user)
@@ -700,7 +729,7 @@ def generate_collage_view(request: HttpRequest, pk: uuid.UUID) -> HttpResponse:
     # Check permissions (same as detail view)
     is_owner = request.user.is_authenticated and album.user == request.user
     is_editor = request.user.is_authenticated and (
-        is_owner or album.editors.filter(id=request.user.id).exists()
+        is_owner or album.editors.filter(id=request.user.id).exists()  # type: ignore
     )
 
     if not is_editor and not album.is_public:
@@ -708,7 +737,7 @@ def generate_collage_view(request: HttpRequest, pk: uuid.UUID) -> HttpResponse:
             return redirect("login")
         return HttpResponseForbidden("You do not have permission to view this album.")
 
-    photos = album.photos.all()
+    photos = album.photos.all()  # type: ignore
     if not photos:
         return HttpResponse("No photos in album", status=404)
 

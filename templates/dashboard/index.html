@@ -1,12 +1,44 @@
-{% extends 'base.html' %} {% load static %} {% block extra_css %}
-<link href="{% static 'css/pages/dashboard.css' %}" rel="stylesheet" />
-{% endblock %} {% block content %}
+{% extends 'base.html' %} {% load static %} {% block content %}
 <div class="container dashboard-container">
   <div class="dashboard-header">
     <h1 class="dashboard-title">Мои Альбомы</h1>
     <a href="{% url 'create_album' %}" class="btn btn-primary">
       <i class="fas fa-plus btn-icon"></i> Новый Альбом
     </a>
+  </div>
+
+  <div class="filter-bar">
+    <form method="get" class="filter-form">
+      <div class="search-input-group">
+        <i class="fas fa-search search-icon"></i>
+        <input 
+          type="text" 
+          name="q" 
+          placeholder="Поиск по названию или описанию..." 
+          value="{{ current_q }}"
+          class="search-input"
+        >
+      </div>
+      
+      <select name="status" class="filter-select">
+        <option value="" {% if not current_status %}selected{% endif %}>Все альбомы</option>
+        <option value="public" {% if current_status == 'public' %}selected{% endif %}>Публичные</option>
+        <option value="private" {% if current_status == 'private' %}selected{% endif %}>Личные</option>
+      </select>
+      
+      <select name="ordering" class="filter-select">
+        <option value="-created_at" {% if current_ordering == '-created_at' %}selected{% endif %}>Сначала новые</option>
+        <option value="created_at" {% if current_ordering == 'created_at' %}selected{% endif %}>Сначала старые</option>
+        <option value="title" {% if current_ordering == 'title' %}selected{% endif %}>По названию (А-Я)</option>
+        <option value="-title" {% if current_ordering == '-title' %}selected{% endif %}>По названию (Я-А)</option>
+      </select>
+      
+      <button type="submit" class="btn btn-primary filter-btn">Найти</button>
+      
+      {% if current_q or current_status %}
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary">Сбросить</a>
+      {% endif %}
+    </form>
   </div>
 
   {% if albums %}

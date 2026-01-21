@@ -1,11 +1,9 @@
 {% extends 'base.html' %} {% load static %} {% block title %}Shared Photo - {{ album.title }}{%
-endblock %} {% block extra_css %}
-<link href="{% static 'css/pages/public_photo.css' %}" rel="stylesheet" />
-{% endblock %} {% block content %}
+endblock %} {% block content %}
 <div class="shared-photo-container">
   <div class="photo-wrapper">
     <a href="{{ photo.image.url }}" target="_blank">
-      <img src="{{ photo.image.url }}" alt="Shared Photo" loading="lazy" style="max-width: 100%; height: auto;" />
+      <img src="{{ photo.image.url }}" alt="Shared Photo" loading="lazy" />
     </a>
 
     <div class="photo-meta">
