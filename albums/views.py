@@ -16,6 +16,7 @@ from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import viewsets, permissions, status, generics, filters
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.views import APIView
@@ -127,6 +128,7 @@ class AlbumViewSet(UserOwnedMixin, viewsets.ModelViewSet):
     queryset = Album.objects.all()
     serializer_class = AlbumSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = PageNumberPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     # 5 variants of filtering
     filterset_fields = {
@@ -399,11 +401,32 @@ class PhotoViewSet(UserOwnedMixin, viewsets.ModelViewSet):
 
     queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
+    pagination_class = PageNumberPagination
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ["album", "created_at", "is_favorite"]
     ordering_fields = ["created_at", "file_size"]  # file_size mock
     user_field = "album__user"  # Переопределяем поле фильтрации
+
+    @action(detail=False, methods=["get"])
+    def complex_filter(self, request):
+        """
+        Сложная фильтрация фото (Q-запрос из задания):
+        Все фото пользователя ИЛИ (Избранные фото из НЕ приватных альбомов).
+        """
+        # (is_favorite=True) & ~Q(album__is_public=False) -> Избранные в публичных альбомах
+        # | Q(album__user=request.user) -> Или все мои фото
+        query = (Q(is_favorite=True) & ~Q(album__is_public=False)) | Q(album__user=request.user)
+
+        photos = Photo.objects.filter(query).distinct().order_by("-created_at")
+
+        page = self.paginate_queryset(photos)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(photos, many=True)
+        return Response(serializer.data)
 
     @action(methods=["POST"], detail=True)
     def reorder(self, request, pk=None):
@@ -627,7 +650,7 @@ def add_photos_view(request, pk):
 
     # Permission check: Owner or Editor
     is_owner = album.user == request.user
-    is_editor = album.editors.filter(id=cast(User, request.user).id).exists()
+    is_editor = album.editors.filter(id=cast(User, request.user).id).exists()  # type: ignore
 
     if not (is_owner or is_editor):
         return HttpResponseForbidden("You do not have permission to add photos to this album.")
@@ -803,5 +826,5 @@ def public_photo_view(request, token):
     """
     photo = get_object_or_404(Photo, public_token=token)
 
-    context = {"photo": photo, "album": photo.album, "download_name": f"photo_{photo.id}.jpg"}
+    context = {"photo": photo, "album": photo.album, "download_name": f"photo_{photo.id}.jpg"}  # type: ignore
     return render(request, "public_photo.html", context)

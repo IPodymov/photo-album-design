@@ -1,6 +1,6 @@
 from django.contrib import admin
 from import_export.admin import ImportExportModelAdmin
-from import_export import resources
+from import_export import resources, fields
 from simple_history.admin import SimpleHistoryAdmin
 
 from .models import Album, Photo, Collage, BugReport
@@ -8,7 +8,7 @@ from .utils import export_queryset_to_excel
 
 
 class AlbumResource(resources.ModelResource):
-    photo_count = resources.Field()
+    photo_count = fields.Field()
 
     class Meta:
         model = Album
@@ -37,22 +37,39 @@ class AlbumResource(resources.ModelResource):
 class PhotoInline(admin.TabularInline):
     model = Photo
     extra = 1
+    readonly_fields = ("created_at",)
 
 
 @admin.register(Album)
 class AlbumAdmin(ImportExportModelAdmin, SimpleHistoryAdmin):
     resource_class = AlbumResource
     list_display = ("title", "user", "is_public", "photo_count", "created_at")
+    list_display_links = ("title",)
     list_filter = ("is_public", "created_at", "user")
     search_fields = ("title", "description")
     ordering = ("-created_at",)
     inlines = [PhotoInline]
     date_hierarchy = "created_at"
+    readonly_fields = ("created_at", "updated_at")
+    raw_id_fields = ("user",)
+    filter_horizontal = ("editors",)
 
+    fieldsets = (
+        ("Основные", {
+            "fields": ("title", "description", "user")
+        }),
+        ("Настройки", {
+            "fields": ("is_public", "editors")
+        }),
+        ("Даты", {
+            "fields": ("created_at", "updated_at"),
+            "classes": ("collapse",)
+        }),
+    )
+
+    @admin.display(description="Фотографии")
     def photo_count(self, obj):
         return obj.photos.count()
-
-    photo_count.short_description = "Photos"
 
 
 @admin.register(BugReport)
@@ -61,6 +78,8 @@ class BugReportAdmin(ImportExportModelAdmin):
     list_filter = ("status", "created_at")
     search_fields = ("title", "description", "user__username")
     date_hierarchy = "created_at"
+    readonly_fields = ("created_at",)
+    raw_id_fields = ("user",)
     # Keeping the custom action as well
     actions = ["export_to_excel"]
 
@@ -87,5 +106,13 @@ class BugReportAdmin(ImportExportModelAdmin):
         )
 
 
-admin.site.register(Photo, SimpleHistoryAdmin)
+@admin.register(Photo)
+class PhotoAdmin(SimpleHistoryAdmin):
+    list_display = ("id", "album", "created_at", "is_favorite")
+    list_filter = ("created_at", "is_favorite", "album__user")
+    search_fields = ("album__title", "public_token")
+    raw_id_fields = ("album",)
+    date_hierarchy = "created_at"
+
+
 admin.site.register(Collage)
